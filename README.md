@@ -15,6 +15,8 @@ library(ranger)
 ```
 Additionally, you need to save the following R codes from the 'functions' folder to your working directory and import these files:
 ```{r}
+source("interaction_method_adaptive")
+source("get_value")
 source("get_true_opt_value")
 source("get_vsm")
 ```
