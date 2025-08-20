@@ -18,17 +18,16 @@ library(ranger)
 # - nfold: # of folds used for CV
 
 # import several R functions specified in README.md (note: save those to your working directory)
-source()
-source()
-source()
-source()
-source()
-source()
-source()
-source()
-source()
-source()
-source()
+source("adaptive_lasso")
+source("interaction_adaptive_lasso")
+source("get_value")
+source("get_true_opt_value")
+source("get_vsm")
+source("all")
+source("DRITR")
+source("obj_fun")
+source("obj")
+source("real_data_new")
 
 # generate AR(1) covariance matrix
 make_ar_cov = function(q, rho = rho) {
@@ -52,10 +51,10 @@ beta_s_sparse = c(alpha1, alpha2_sparse, beta1_sparse, beta2_sparse)
 
 # theta
 theta_list = list(
-  {tmp = rep(0, q * 2 + 2); tmp[2] <- 2.5; tmp[2 + q + 1] = 2.5; tmp},
+  {tmp = rep(0, q * 2 + 2); tmp[2] = 2.5; tmp[2 + q + 1] = 2.5; tmp},
   {tmp = rep(0, q * 2 + 2); tmp[(2 + q + 1):(2 + 2 * q)] = c(seq(4.5, 1.5, length.out = q * 0.3), rep(0, q * 0.7)); tmp},
   {tmp = rep(0.5, q * 2 + 2); tmp[(2 + q + 1):(2 + 2 * q)] = c(rep(0.5, q * 0.7), rep(0, q * 0.3)); tmp},
-  {tmp = rep(0, q * 2 + 2); tmp[2] <- 2.5; tmp[2 + q + 1] = 2.5; tmp},
+  {tmp = rep(0, q * 2 + 2); tmp[2] = 2.5; tmp[2 + q + 1] = 2.5; tmp},
   {tmp = rep(0, q * 2 + 2); tmp[(2 + q + 1):(2 + 2 * q)] = c(seq(4.5, 1.5, length.out = q * 0.3), rep(0, q * 0.7)); tmp},
   {tmp = rep(0.5, q * 2 + 2); tmp[(2 + q + 1):(2 + 2 * q)] = c(rep(0.5, q * 0.7), rep(0, q * 0.3)); tmp}
 )
