@@ -10,20 +10,23 @@ R is a statistical software program, and RStudio is a user interface for R. We r
 You may need to install the following dependencies first:
 ```{r}
 library(MASS)
-library(survival)
 library(glmnet)
-library(mice)
-library(smcfcs)
-library(survcomp)
-library(DescTools)
-library(Hmisc)
-library(knitr)
+library(ranger)
 ```
 Additionally, you need to save the following R codes from the 'functions' folder to your working directory and import these files:
 ```{r}
 source("run_methods_eval_fun")
-source("simul_dat_fun")
+source("get_vsm")
 ```
+In addition, for the additional benchmark model, you need to download the codes from the Supplementary Materials of Wu & Yang (2023) and import the files:
+```{r}
+source("all")
+source("DRITR")
+source("obj_fun")
+source("obj")
+source("real_data_new")
+```
+
 # License
 ```{r}
 Licensed under the GNU General Public License v3.0 (GPL-3.0);
