@@ -21,7 +21,7 @@ source("get_value")
 source("get_true_opt_value")
 source("get_vsm")
 ```
-In addition, for the additional benchmark model, you need to download the codes from the Supplementary Materials of Wu & Yang (2023) and import the files:
+In addition, for the additional benchmark model, you need to download the R codes from the Supplementary Materials of Wu & Yang (2023) and import the files:
 ```{r}
 source("all")
 source("DRITR")
