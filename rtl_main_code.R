@@ -76,6 +76,7 @@ results = vector("list", length(theta_list))
 names(results) = paste0("theta", 1:length(theta_list))
 
 for (theta_case in seq_along(theta_list)){
+  
   theta = theta_list[[theta_case]]
   beta_s = get_beta_s_for_case(theta_case)
   beta_t = beta_s + theta
@@ -200,6 +201,7 @@ for (theta_case in seq_along(theta_list)){
     IC_post[sim] = get_vsm(post_hat)$FP
     IC_inter[sim] = get_vsm(inter_hat)$FP
     IC_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$FP
+    
   }
   
   results[[theta_case]] = list(
