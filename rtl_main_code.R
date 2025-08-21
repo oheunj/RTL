@@ -117,9 +117,9 @@ for (theta_case in seq_along(theta_list)){
     opt_val = get_true_opt_value(beta_t, O_test)
     
     # RTL
-    beta_s_hat = adaptive_lasso_with_enet_weights(Phi_s, y_s, q = q)
+    beta_s_hat = adaptive_lasso_with_enet_weights(Phi_s, y_s, q = q, nfold = nfold)
     y_tilde = y_t - model.matrix(~Phi_t) %*% beta_s_hat
-    theta_hat = adaptive_lasso_with_enet_weights(Phi_t, y_tilde, q = q)
+    theta_hat = adaptive_lasso_with_enet_weights(Phi_t, y_tilde, q = q, nfold = nfold)
     beta_t_hat = beta_s_hat + theta_hat
     RTL_val = get_value(beta_t_hat, O_test, beta_t)
     RTL_rmse = sqrt(mean((model.matrix(~Phi_test) %*% beta_t_hat - y_test)^2))
@@ -127,22 +127,22 @@ for (theta_case in seq_along(theta_list)){
     # homo
     X_homo = rbind(Phi_s, Phi_t)
     y_homo = c(y_s, y_t)
-    homo_hat = adaptive_lasso_with_enet_weights(X_homo, y_homo, q = q)
+    homo_hat = adaptive_lasso_with_enet_weights(X_homo, y_homo, q = q, nfold = nfold)
     Homo_val = get_value(homo_hat, O_test, beta_t)
     Homo_rmse = sqrt(mean((model.matrix(~Phi_test) %*% homo_hat - y_test)^2))
     
     # pre
-    pre_hat = adaptive_lasso_with_enet_weights(Phi_s, y_s, q = q)
+    pre_hat = adaptive_lasso_with_enet_weights(Phi_s, y_s, q = q, nfold = nfold)
     Pre_val = get_value(pre_hat, O_test, beta_t)
     Pre_rmse = sqrt(mean((model.matrix(~Phi_test) %*% pre_hat - y_test)^2))
     
     # post
-    post_hat = adaptive_lasso_with_enet_weights(Phi_t, y_t, q = q)
+    post_hat = adaptive_lasso_with_enet_weights(Phi_t, y_t, q = q, nfold = nfold)
     Post_val = get_value(post_hat, O_test, beta_t)
     Post_rmse = sqrt(mean((model.matrix(~Phi_test) %*% post_hat - y_test)^2))
     
     # interaction
-    inter_hat = interaction_method(Phi_s, y_s, Phi_t, y_t, q = q)
+    inter_hat = interaction_method(Phi_s, y_s, Phi_t, y_t, q = q, nfold = nfold)
     Inter_val = get_value(inter_hat, O_test, beta_t)
     Inter_rmse = sqrt(mean((model.matrix(~Phi_test) %*% inter_hat - y_test)^2))
     
