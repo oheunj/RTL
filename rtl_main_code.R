@@ -70,7 +70,7 @@ get_beta_s_for_case = function(case_idx) {
   return(beta_s_list[[case_idx]])
 }
 
-# run simulations for Section 3.1
+# run simulations
 results = vector("list", length(theta_list))
 names(results) = paste0("theta", 1:length(theta_list))
 
