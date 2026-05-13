@@ -2,7 +2,7 @@
 
 The full manuscript will be available soon:
 
-* __Oh, E. J.,__ and Qian, M. (In Preparation). Reluctant transfer learning in penalized regressions for individualized treatment rules under effect heterogeneity.
+* __Oh, E. J.,__ and Qian, M. (Under Review). Reluctant transfer learning in penalized regressions for individualized treatment rules under effect heterogeneity.
 
 
 
