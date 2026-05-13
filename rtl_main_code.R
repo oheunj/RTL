@@ -122,12 +122,12 @@ for (theta_case in seq_along(theta_list)){
     RTL_val = get_value(beta_t_hat, O_test, beta_t)
     RTL_rmse = sqrt(mean((model.matrix(~Phi_test) %*% beta_t_hat - y_test)^2))
     
-    # post
+    # post (TargOnly)
     post_hat = adaptive_lasso_with_enet_weights(Phi_t, y_t, q = q, nfold = nfold)
     Post_val = get_value(post_hat, O_test, beta_t)
     Post_rmse = sqrt(mean((model.matrix(~Phi_test) %*% post_hat - y_test)^2))
     
-    # ITL by Wu & Yang (2023)
+    # Wu & Yang (ITL)
     y.in.rct = y_s
     x.in.rct = O_s
     a.in.rct = A_s
@@ -163,6 +163,15 @@ for (theta_case in seq_along(theta_list)){
     weighted.value[action.weight == 1] = reg.mu1.rf[action.weight == 1]
     WuYang_val = mean(weighted.value)
     WuYang_rmse = sqrt(mean((predict(ranger(y.test ~ ., data = dat), data = dat)$predictions - y_test)^2))
+
+    # TransLasso
+    n.vec = c(nrow(O_t), nrow(O_s))
+    size.A0 = 1
+    Phi = data.matrix(rbind(cbind(A_t, O_t, A_t * O_t),
+                            cbind(A_s, O_s, A_s * O_s)))
+    beta.kA = las.kA(model.matrix(~Phi), c(y_t,y_s), A0 = 1:size.A0, n.vec = n.vec, l1=T)$beta.kA
+    transL_val = get_value(beta.kA, O_test, beta_t)
+    transL_rmse = sqrt(mean((model.matrix(~Phi_test) %*% beta.kA - y_test_true)^2))
     
     # combine results
     sim_result[sim, ] = c(RTL_val, Post_val, WuYang_val, transL_val,
