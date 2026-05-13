@@ -71,7 +71,6 @@ get_beta_s_for_case = function(case_idx) {
 }
 
 # run simulations
-
 results = vector("list", length(theta_list))
 names(results) = paste0("theta", 1:length(theta_list))
 
@@ -82,19 +81,18 @@ for (theta_case in seq_along(theta_list)){
   beta_t = beta_s + theta
   true_nonzero = which(beta_t[OA_start:OA_end] != 0)
   
-  sim_result = matrix(NA, nrow = n_sim, ncol = 20)
-  colnames(sim_result) = c("RTL_Value", "Homo_Value", "Pre_Value", "Post_Value", "Inter_Value", "WuYang_Value",
-                           "RTL_RMSE", "Homo_RMSE", "Pre_RMSE", "Post_RMSE", "Inter_RMSE", "WuYang_RMSE",
+  sim_result = matrix(NA, nrow = n_sim, ncol = 10)
+  colnames(sim_result) = c("RTL_Value", "Post_Value", "WuYang_Value", "TransL_Value",
+                           "RTL_RMSE", "Post_RMSE", "WuYang_RMSE", "TransL_RMSE",
                            "Obs_Value", "Opt_Value")
-  
-  C_rtl = C_homo = C_pre = C_post = C_inter = C_wuyang = rep(NA, n_sim)
-  IC_rtl = IC_homo = IC_pre = IC_post = IC_inter = IC_wuyang = rep(NA, n_sim)
+  FP_rtl = FN_rtl = FP_post = FN_post = FP_wuyang = FN_wuyang = FP_transL = FN_transL = rep(NA, n_sim)
+  TP_rtl = TN_rtl = TP_post = TN_post = TP_wuyang = TN_wuyang = TP_transL = TN_transL = rep(NA, n_sim)
   
   set.seed(1)
   O_test = mvrnorm(n_test, rep(0, q), Sigma_ar)
   A_test = rbinom(n_test, 1, 0.5)
   Phi_test = cbind(A_test, O_test, A_test * O_test)
-  y_test = model.matrix(~Phi_test) %*% beta_t + rnorm(n_test, sd = noise_sd)
+  y_test_true = model.matrix(~Phi_test) %*% beta_t
   
   for (sim in 1:n_sim){
     
@@ -124,29 +122,12 @@ for (theta_case in seq_along(theta_list)){
     RTL_val = get_value(beta_t_hat, O_test, beta_t)
     RTL_rmse = sqrt(mean((model.matrix(~Phi_test) %*% beta_t_hat - y_test)^2))
     
-    # homo
-    X_homo = rbind(Phi_s, Phi_t)
-    y_homo = c(y_s, y_t)
-    homo_hat = adaptive_lasso_with_enet_weights(X_homo, y_homo, q = q, nfold = nfold)
-    Homo_val = get_value(homo_hat, O_test, beta_t)
-    Homo_rmse = sqrt(mean((model.matrix(~Phi_test) %*% homo_hat - y_test)^2))
-    
-    # pre
-    pre_hat = adaptive_lasso_with_enet_weights(Phi_s, y_s, q = q, nfold = nfold)
-    Pre_val = get_value(pre_hat, O_test, beta_t)
-    Pre_rmse = sqrt(mean((model.matrix(~Phi_test) %*% pre_hat - y_test)^2))
-    
     # post
     post_hat = adaptive_lasso_with_enet_weights(Phi_t, y_t, q = q, nfold = nfold)
     Post_val = get_value(post_hat, O_test, beta_t)
     Post_rmse = sqrt(mean((model.matrix(~Phi_test) %*% post_hat - y_test)^2))
     
-    # interaction
-    inter_hat = interaction_method(Phi_s, y_s, Phi_t, y_t, q = q, nfold = nfold)
-    Inter_val = get_value(inter_hat, O_test, beta_t)
-    Inter_rmse = sqrt(mean((model.matrix(~Phi_test) %*% inter_hat - y_test)^2))
-    
-    # Wu & Yang (2023)
+    # ITL by Wu & Yang (2023)
     y.in.rct = y_s
     x.in.rct = O_s
     a.in.rct = A_s
@@ -184,31 +165,31 @@ for (theta_case in seq_along(theta_list)){
     WuYang_rmse = sqrt(mean((predict(ranger(y.test ~ ., data = dat), data = dat)$predictions - y_test)^2))
     
     # combine results
-    sim_result[sim, ] = c(RTL_val, Homo_val, Pre_val, Post_val, Inter_val, WuYang_val, 
-                          RTL_rmse, Homo_rmse, Pre_rmse, Post_rmse, Inter_rmse, WuYang_rmse,
+    sim_result[sim, ] = c(RTL_val, Post_val, WuYang_val, transL_val,
+                          RTL_rmse, Post_rmse, WuYang_rmse, transL_rmse,
                           obs_val, opt_val)
     
-    C_rtl[sim] = get_vsm(theta_hat)$TN
-    C_homo[sim] = get_vsm(homo_hat)$TN
-    C_pre[sim] = get_vsm(pre_hat)$TN
-    C_post[sim] = get_vsm(post_hat)$TN
-    C_inter[sim] = get_vsm(inter_hat)$TN
-    C_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$TN
+    FP_rtl[sim] = get_vsm(theta_hat)$FP; FN_rtl[sim] = get_vsm(theta_hat)$FN
+    FP_post[sim] = get_vsm(post_hat)$FP; FN_post[sim] = get_vsm(post_hat)$FN
+    FP_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$FP 
+    FN_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$FN
+    FP_transL[sim] = get_vsm(beta.kA)$FP; FN_transL[sim] = get_vsm(beta.kA)$FN
     
-    IC_rtl[sim] = get_vsm(theta_hat)$FP
-    IC_homo[sim] = get_vsm(homo_hat)$FP
-    IC_pre[sim] = get_vsm(pre_hat)$FP
-    IC_post[sim] = get_vsm(post_hat)$FP
-    IC_inter[sim] = get_vsm(inter_hat)$FP
-    IC_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$FP
+    TP_rtl[sim] = get_vsm(theta_hat)$TP; TN_rtl[sim] = get_vsm(theta_hat)$TN
+    TP_post[sim] = get_vsm(post_hat)$TP; TN_post[sim] = get_vsm(post_hat)$TN
+    TP_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$TP
+    TN_wuyang[sim] = get_vsm(res$beta.hat, is_wuyang = TRUE)$TN
+    TP_transL[sim] = get_vsm(beta.kA)$TP; TN_transL[sim] = get_vsm(beta.kA)$TN
     
   }
   
   results[[theta_case]] = list(
     coeff = data.frame(beta_s = beta_s, beta_t = beta_t, theta = theta),
     summary = sim_result,
-    C_vec = list(RTL = C_rtl, Homo = C_homo, Pre = C_pre, Post = C_post, Inter = C_inter, WuYang = C_wuyang),
-    IC_vec = list(RTL = IC_rtl, Homo = IC_homo, Pre = IC_pre, Post = IC_post, Inter = IC_inter, WuYang = IC_wuyang)
+    FP_vec = list(RTL = FP_rtl, Post = FP_post, WuYang = FP_wuyang, TransL = FP_transL),
+    FN_vec = list(RTL = FN_rtl, Post = FN_post, WuYang = FN_wuyang, TransL = FN_transL),
+    TP_vec = list(RTL = TP_rtl, Post = TP_post, WuYang = TP_wuyang, TransL = TP_transL),
+    TN_vec = list(RTL = TN_rtl, Post = TN_post, WuYang = TN_wuyang, TransL = TN_transL)
   )
   cat("\n")
 
@@ -223,9 +204,3 @@ for (theta_case in seq_along(theta_list)){
   save(output, file = filename)
 
 }
-
-
-
-
-
-
